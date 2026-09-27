@@ -1,6 +1,6 @@
 """Tests for the shipped models, and the pattern to copy for DCN2 layers.
 
-Run with:  uv run pytest
+Run with:  uv run --project config pytest -c config/pyproject.toml
 
 Phase 2 asks for a shape test per component plus an initialization-invariant
 test for collision-weighted lookups. `test_dcnv2_forward_shape` and

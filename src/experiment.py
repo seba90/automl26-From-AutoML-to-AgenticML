@@ -20,17 +20,17 @@ not just the winner.
 
 Usage:
     # generation 0: trains and evaluates --base as-is, seeds start.json/best.json
-    uv run python src/experiment.py init my_experiment --base model_lr.json --data data_example.csv
+    uv run --project config python src/experiment.py init my_experiment --base models/model_lr.json --data data_example.csv
 
     # one generation, config given inline as a JSON file
-    uv run python src/experiment.py run my_experiment --data data_example.csv \\
+    uv run --project config python src/experiment.py run my_experiment --data data_example.csv \\
         --config candidate.json --hypothesis "higher LR converges faster in one pass"
 
     # N generations in one call: a plan is a JSON list of
     #   {"hypothesis": str, "overrides": {...}}   -- merged onto the current best
     #   {"hypothesis": str, "config": {...}}      -- full config, used as-is
     # entries, run in order; each updates best.json before the next one runs.
-    uv run python src/experiment.py run my_experiment --data data_example.csv --plan plan.json
+    uv run --project config python src/experiment.py run my_experiment --data data_example.csv --plan plan.json
 """
 
 import argparse
@@ -76,7 +76,7 @@ def train_and_evaluate(config: dict, data: Path, window: int, stride: int) -> di
         config_path.write_text(json.dumps(config, indent=2))
 
         subprocess.run(
-            ['uv', 'run', 'python', 'src/train.py', str(config_path), str(data),
+            ['uv', 'run', '--project', 'config', 'python', 'src/train.py', str(config_path), str(data),
              '--output_file', str(preds_path)],
             check=True,
         )

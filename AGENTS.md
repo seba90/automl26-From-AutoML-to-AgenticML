@@ -9,10 +9,10 @@ running its own search experiment.
 
 ```bash
 # 1. Install dependencies
-uv sync
+uv sync --project config
 
 # 2. Start the dashboard (reads everything under experiments/)
-uv run streamlit run src/dashboard.py
+uv run --project config streamlit run src/dashboard.py
 ```
 
 That's it — the 1% Criteo sample used throughout this tutorial
@@ -28,9 +28,9 @@ Once you've worked through the tutorial's experiments on the bundled 1%
 sample, you can keep going on your own with more data:
 
 ```bash
-./download_data.sh full   # -> data/train.txt (~4.6 GB compressed download)
-uv run python src/preprocess_criteo.py data/train.txt data/criteo_10.csv.gz --sample-mod 10   # 10% sample
-uv run python src/preprocess_criteo.py data/train.txt data/criteo_full.csv.gz                 # full dataset
+scripts/download_data.sh full   # -> data/train.txt (~4.6 GB compressed download)
+uv run --project config python src/preprocess_criteo.py data/train.txt data/criteo_10.csv.gz --sample-mod 10   # 10% sample
+uv run --project config python src/preprocess_criteo.py data/train.txt data/criteo_full.csv.gz                 # full dataset
 ```
 
 `--sample-mod k` keeps every k-th row (`row_index % k == 0`), preserving the
@@ -41,6 +41,23 @@ not on an already-hashed one, but all resulting CSVs (including the bundled
 with any `hash_size_bits` config — no need to regenerate a file just to
 change that setting. Point `--data` at the bigger file and every workflow
 below (`src/experiment.py`, `src/bayes_search.py`, the dashboard) works unchanged.
+
+## Repository layout
+
+The root contains this guide and project folders only:
+
+```text
+.github/   CI workflows
+config/    pyproject.toml, uv.lock, and project-local ignore rules
+data/      bundled and generated Criteo datasets
+docs/      experiment tutorial
+experiments/ generated experiment outputs (gitignored)
+models/    model seed configs
+papers/    reference papers
+scripts/   utility scripts
+src/       training, model, and search code
+tests/     pytest suite
+```
 
 ## Repo map
 
@@ -54,9 +71,12 @@ below (`src/experiment.py`, `src/bayes_search.py`, the dashboard) works unchange
 | `src/experiment.py` | Generation-based experiment runner — see below. |
 | `src/bayes_search.py` | Non-LLM Gaussian-Process + Expected-Improvement hyperparameter search, writing into the same experiment folder structure. |
 | `src/dashboard.py` | Streamlit dashboard over `experiments/*/results.csv` + `best.json`. |
-| `model_lr.json`, `model_dcnv2.json`, `model_dcn2.json` | Seed configs, one per algorithm. |
-| `add_combo_features.py` | Optional: appends hashed crossed-feature columns to a preprocessed CSV. |
-| `tests/test_models.py` | Shape/gradient/sparsity tests per algorithm — run with `uv run pytest`. |
+| `models/` | Model seed configs; generated `model_dcn2.json` is gitignored. |
+| `config/pyproject.toml`, `config/uv.lock` | Python project metadata, dependencies, and lockfile. |
+| `docs/README.md` | Experiment tutorial. |
+| `papers/dcn_paper.pdf` | DCN² reference paper. |
+| `scripts/download_data.sh` | Dataset downloader. |
+| `tests/test_models.py` | Shape/gradient/sparsity tests per algorithm — run with `uv run --project config pytest -c config/pyproject.toml -q`. |
 
 ## The research loop (`src/experiment.py`)
 
@@ -80,17 +100,17 @@ winner.
 
 ```bash
 # generation 0: trains --base as-is, seeds start.json/best.json
-uv run python src/experiment.py init my_experiment --base model_dcnv2.json --data data/criteo_01.csv.gz
+uv run --project config python src/experiment.py init my_experiment --base models/model_dcnv2.json --data data/criteo_01.csv.gz
 
 # one more generation, config given as overrides on top of the current best.json
-uv run python src/experiment.py run my_experiment --data data/criteo_01.csv.gz \
+uv run --project config python src/experiment.py run my_experiment --data data/criteo_01.csv.gz \
     --plan '[{"hypothesis": "smaller batches -> more gradient steps", "overrides": {"batch_size": 500}}]'
 
 # or N generations in one call — a plan is a JSON list of
 #   {"hypothesis": str, "overrides": {...}}   merged onto the *current* best
 #   {"hypothesis": str, "config": {...}}      full config, used as-is
 # run in order; each updates best.json before the next entry runs
-uv run python src/experiment.py run my_experiment --data data/criteo_01.csv.gz --plan plan.json
+uv run --project config python src/experiment.py run my_experiment --data data/criteo_01.csv.gz --plan plan.json
 ```
 
 There is no built-in hyperparameter *proposer* for this path — something
@@ -106,11 +126,11 @@ are proposed by a Gaussian Process + Expected Improvement loop
 or an LLM. One command runs the whole thing:
 
 ```bash
-uv run python src/bayes_search.py search my_experiment \
-    --base model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
+uv run --project config python src/bayes_search.py search my_experiment \
+    --base models/model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
 
 # add more generations to an existing search later
-uv run python src/bayes_search.py resume my_experiment --data data/criteo_01.csv.gz --n-iterations 5
+uv run --project config python src/bayes_search.py resume my_experiment --data data/criteo_01.csv.gz --n-iterations 5
 ```
 
 `--n-iterations` counts generation 0 (the unmodified baseline). Search spaces
@@ -127,7 +147,7 @@ dimension → AUC near 0.50). That's a real, expected failure mode of blind
 search, not a bug — useful context if you're comparing it against a
 reasoning-driven proposer.
 
-## Model configs (`model_*.json` → `algorithm` field)
+## Model configs (`models/model_*.json` → `algorithm` field)
 
 All four algorithms share the same config schema (`Config` in `src/models.py`,
 extra fields are just ignored by algorithms that don't need them):
@@ -152,7 +172,7 @@ extra fields are just ignored by algorithms that don't need them):
 ## Tests
 
 ```bash
-uv run pytest -q
+uv run --project config pytest -c config/pyproject.toml -q
 ```
 
 Covers: forward-pass shapes per algorithm, the collision-weight init
