@@ -1,5 +1,7 @@
 # Tutorial: Bayesian vs. LLM-Driven Hyperparameter Search
 
+[![CI](https://github.com/seba90/automl26-From-AutoML-to-AgenticML/actions/workflows/ci.yml/badge.svg)](https://github.com/seba90/automl26-From-AutoML-to-AgenticML/actions/workflows/ci.yml)
+
 This walks through three 10-generation search experiments on the same 1%
 Criteo sample (`data/criteo_01.csv.gz`, already included in this repo and
 ready to go — no download or preprocessing needed), comparing a classic
