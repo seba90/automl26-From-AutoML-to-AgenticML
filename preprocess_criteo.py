@@ -14,11 +14,15 @@ Preprocessing (follows the DCN2 paper):
 Deterministic splits (everyone must train on byte-identical files):
     full stream : python preprocess_criteo.py train.txt criteo_full.csv
     5% sample   : python preprocess_criteo.py train.txt criteo_05.csv --sample-mod 20
-    1% sample   : python preprocess_criteo.py train.txt criteo_01.csv --sample-mod 100
+    1% sample   : python preprocess_criteo.py train.txt criteo_01.csv.gz --sample-mod 100
 Sampling keeps every k-th row (row_index % k == 0), preserving temporal order.
+Output is gzip-compressed whenever output_file ends in .gz (train.py reads
+either transparently); handy since a hashed CSV compresses to about a quarter
+of its size.
 """
 
 import argparse
+import gzip
 import math
 import sys
 import time
@@ -61,7 +65,8 @@ def run():
 
     n_in = n_out = 0
     t0 = time.time()
-    with open(args.input_file) as fin, open(args.output_file, 'w') as fout:
+    open_out = gzip.open if args.output_file.endswith('.gz') else open
+    with open(args.input_file) as fin, open_out(args.output_file, 'wt') as fout:
         fout.write(','.join(header) + '\n')
         for line in fin:
             row_idx, n_in = n_in, n_in + 1

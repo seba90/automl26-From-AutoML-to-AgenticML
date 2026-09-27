@@ -13,7 +13,7 @@ uv sync
 
 # 2. Get the raw data, then build the 1% sample used for fast experiments
 ./download_data.sh full                       # -> data/train.txt (~4.6 GB compressed download)
-uv run python preprocess_criteo.py data/train.txt data/criteo_01.csv --sample-mod 100
+uv run python preprocess_criteo.py data/train.txt data/criteo_01.csv.gz --sample-mod 100
 
 # (optional, for larger-scale runs)
 uv run python preprocess_criteo.py data/train.txt data/criteo_10.csv --sample-mod 10   # 10% sample
@@ -68,17 +68,17 @@ winner.
 
 ```bash
 # generation 0: trains --base as-is, seeds start.json/best.json
-uv run python experiment.py init my_experiment --base model_dcnv2.json --data data/criteo_01.csv
+uv run python experiment.py init my_experiment --base model_dcnv2.json --data data/criteo_01.csv.gz
 
 # one more generation, config given as overrides on top of the current best.json
-uv run python experiment.py run my_experiment --data data/criteo_01.csv \
+uv run python experiment.py run my_experiment --data data/criteo_01.csv.gz \
     --plan '[{"hypothesis": "smaller batches -> more gradient steps", "overrides": {"batch_size": 500}}]'
 
 # or N generations in one call — a plan is a JSON list of
 #   {"hypothesis": str, "overrides": {...}}   merged onto the *current* best
 #   {"hypothesis": str, "config": {...}}      full config, used as-is
 # run in order; each updates best.json before the next entry runs
-uv run python experiment.py run my_experiment --data data/criteo_01.csv --plan plan.json
+uv run python experiment.py run my_experiment --data data/criteo_01.csv.gz --plan plan.json
 ```
 
 There is no built-in hyperparameter *proposer* for this path — something
@@ -95,10 +95,10 @@ or an LLM. One command runs the whole thing:
 
 ```bash
 uv run python bayes_search.py search my_experiment \
-    --base model_dcnv2.json --data data/criteo_01.csv --n-iterations 10
+    --base model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
 
 # add more generations to an existing search later
-uv run python bayes_search.py resume my_experiment --data data/criteo_01.csv --n-iterations 5
+uv run python bayes_search.py resume my_experiment --data data/criteo_01.csv.gz --n-iterations 5
 ```
 
 `--n-iterations` counts generation 0 (the unmodified baseline). Search spaces

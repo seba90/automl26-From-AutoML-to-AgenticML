@@ -11,14 +11,14 @@ Usage:
     # one command: seeds the experiment (baseline = generation 0) and runs
     # N-1 further GP-EI-driven generations against it
     uv run python bayes_search.py search bo_lr_01 --base model_lr.json \\
-        --data data/criteo_01.csv --n-iterations 8 --n-initial 3
+        --data data/criteo_01.csv.gz --n-iterations 8 --n-initial 3
 
     # optionally override the default search space for the algorithm
     uv run python bayes_search.py search bo_lr_01 --base model_lr.json \\
-        --data data/criteo_01.csv --space my_space.json --n-iterations 8
+        --data data/criteo_01.csv.gz --space my_space.json --n-iterations 8
 
     # add more GP-EI generations to a search that already exists
-    uv run python bayes_search.py resume bo_lr_01 --data data/criteo_01.csv --n-iterations 5
+    uv run python bayes_search.py resume bo_lr_01 --data data/criteo_01.csv.gz --n-iterations 5
 """
 
 import argparse
