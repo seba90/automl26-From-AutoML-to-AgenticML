@@ -1,12 +1,14 @@
 # Tutorial: Bayesian vs. LLM-Driven Hyperparameter Search
 
 This walks through three 10-generation search experiments on the same 1%
-Criteo sample (`data/criteo_01.csv.gz`), comparing a classic non-LLM Bayesian
-optimizer against an LLM acting as the hyperparameter proposer — with and
-without giving the LLM room to reason about *why* a change might help.
+Criteo sample (`data/criteo_01.csv.gz`, already included in this repo and
+ready to go — no download or preprocessing needed), comparing a classic
+non-LLM Bayesian optimizer against an LLM acting as the hyperparameter
+proposer — with and without giving the LLM room to reason about *why* a
+change might help.
 
 Before starting, follow the **Quickstart** in `CLAUDE.md` (install deps,
-build `data/criteo_01.csv.gz`, optionally start the dashboard).
+optionally start the dashboard).
 
 A0 is fully mechanical — one script call, no LLM involved, deterministic
 given its seed. A1 and A2+A3 are **not** meant to be run from a fixed list
@@ -106,3 +108,12 @@ each generation's config itself rather than following a fixed list.
   untuned baseline is structurally weaker (no residual anchor in
   `onlydense`). For an apples-to-apples reasoning ablation, run both A1's
   and A3's prompts against the *same* model config.
+
+## After the tutorial
+
+All of the above runs on the bundled 1% sample so each generation trains in
+seconds. Once you're done, `CLAUDE.md`'s **Beyond the tutorial** section
+covers downloading the full Criteo dataset and building larger samples (10%,
+full) to keep experimenting on your own — `experiment.py` and
+`bayes_search.py` work exactly the same way, just point `--data` at the
+bigger file.

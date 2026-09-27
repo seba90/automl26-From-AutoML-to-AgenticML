@@ -11,24 +11,36 @@ running its own search experiment.
 # 1. Install dependencies
 uv sync
 
-# 2. Get the raw data, then build the 1% sample used for fast experiments
-./download_data.sh full                       # -> data/train.txt (~4.6 GB compressed download)
-uv run python preprocess_criteo.py data/train.txt data/criteo_01.csv.gz --sample-mod 100
-
-# (optional, for larger-scale runs)
-uv run python preprocess_criteo.py data/train.txt data/criteo_10.csv --sample-mod 10   # 10% sample
-uv run python preprocess_criteo.py data/train.txt data/criteo_full.csv                 # full dataset
-
-# 3. Start the dashboard (reads everything under experiments/)
+# 2. Start the dashboard (reads everything under experiments/)
 uv run streamlit run dashboard.py
+```
+
+That's it — the 1% Criteo sample used throughout this tutorial
+(`data/criteo_01.csv.gz`, built with `--sample-mod 100`: every 100th row,
+preserving temporal order) already ships in this repo. `train.py` reads it
+directly, gzip or not, and it works with any `hash_size_bits` config, so
+there's nothing to download or preprocess before you start running
+experiments.
+
+## Beyond the tutorial: scaling up with the full dataset
+
+Once you've worked through the tutorial's experiments on the bundled 1%
+sample, you can keep going on your own with more data:
+
+```bash
+./download_data.sh full   # -> data/train.txt (~4.6 GB compressed download)
+uv run python preprocess_criteo.py data/train.txt data/criteo_10.csv.gz --sample-mod 10   # 10% sample
+uv run python preprocess_criteo.py data/train.txt data/criteo_full.csv.gz                 # full dataset
 ```
 
 `--sample-mod k` keeps every k-th row (`row_index % k == 0`), preserving the
 original temporal order — the whole single-pass protocol depends on that
 order, so never shuffle these files. Sampling is applied on the *raw* file,
-not on an already-hashed one, but all resulting CSVs share the same hash
-space (`HASH_SEED = 42`), so any of them work with any `hash_size_bits`
-config — no need to regenerate a file when you change that setting.
+not on an already-hashed one, but all resulting CSVs (including the bundled
+1% sample) share the same hash space (`HASH_SEED = 42`), so any of them work
+with any `hash_size_bits` config — no need to regenerate a file just to
+change that setting. Point `--data` at the bigger file and every workflow
+below (`experiment.py`, `bayes_search.py`, the dashboard) works unchanged.
 
 ## Repo map
 
