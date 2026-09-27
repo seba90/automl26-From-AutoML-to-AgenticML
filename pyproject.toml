@@ -17,8 +17,7 @@ dependencies = [
 dev = ["pytest>=8.0"]
 
 [tool.pytest.ini_options]
-# the modules live at the repo root, not in a package
-pythonpath = ["."]
+pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.uv]

@@ -1,7 +1,7 @@
 """Single-pass streaming trainer (prequential evaluation: predict, then train).
 
 Usage:
-    python train.py model.json data.csv --output_file preds.csv
+    python src/train.py model.json data.csv --output_file preds.csv
 
 The data CSV has a header; the first column is the label, all other columns are
 hashed int32 feature indices (see preprocess_criteo.py). For every batch the

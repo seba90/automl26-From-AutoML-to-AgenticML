@@ -1,4 +1,4 @@
-# CLAUDE.md — Repo Guide for Agents
+# AGENTS.md — Repo Guide for Agents
 
 This repo is a minimal JAX framework for **single-pass ("prequential") CTR
 model training on Criteo**, plus two hyperparameter-search harnesses (Bayesian
@@ -12,12 +12,12 @@ running its own search experiment.
 uv sync
 
 # 2. Start the dashboard (reads everything under experiments/)
-uv run streamlit run dashboard.py
+uv run streamlit run src/dashboard.py
 ```
 
 That's it — the 1% Criteo sample used throughout this tutorial
 (`data/criteo_01.csv.gz`, built with `--sample-mod 100`: every 100th row,
-preserving temporal order) already ships in this repo. `train.py` reads it
+preserving temporal order) already ships in this repo. `src/train.py` reads it
 directly, gzip or not, and it works with any `hash_size_bits` config, so
 there's nothing to download or preprocess before you start running
 experiments.
@@ -29,8 +29,8 @@ sample, you can keep going on your own with more data:
 
 ```bash
 ./download_data.sh full   # -> data/train.txt (~4.6 GB compressed download)
-uv run python preprocess_criteo.py data/train.txt data/criteo_10.csv.gz --sample-mod 10   # 10% sample
-uv run python preprocess_criteo.py data/train.txt data/criteo_full.csv.gz                 # full dataset
+uv run python src/preprocess_criteo.py data/train.txt data/criteo_10.csv.gz --sample-mod 10   # 10% sample
+uv run python src/preprocess_criteo.py data/train.txt data/criteo_full.csv.gz                 # full dataset
 ```
 
 `--sample-mod k` keeps every k-th row (`row_index % k == 0`), preserving the
@@ -40,25 +40,25 @@ not on an already-hashed one, but all resulting CSVs (including the bundled
 1% sample) share the same hash space (`HASH_SEED = 42`), so any of them work
 with any `hash_size_bits` config — no need to regenerate a file just to
 change that setting. Point `--data` at the bigger file and every workflow
-below (`experiment.py`, `bayes_search.py`, the dashboard) works unchanged.
+below (`src/experiment.py`, `src/bayes_search.py`, the dashboard) works unchanged.
 
 ## Repo map
 
 | File | Role |
 |---|---|
-| `preprocess_criteo.py` | Raw `train.txt` (TSV) → hashed CSV. Continuous features log-bucketed, categoricals murmur3-hashed. One preprocessed file serves every `hash_size_bits` sweep. |
-| `models.py` | Parameter init (`init_params`) + forward pass (`forward`) for every `algorithm`: `lr`, `nn`, `dcnv2`, `dcn2`. Pure JAX, two pytrees: `params['emb']` (hashed table, sparse updates) and `params['dense']` (everything else, dense updates). |
-| `optim.py` | Hand-rolled optimizers: dense Adam/SGD/SOAP for `params['dense']`, **row-sparse** Adam/SGD for `params['emb']` (only touches rows present in the batch — required to make a single pass over a `2^23`-row table tractable). |
-| `train.py` | Streaming trainer: for every batch, predict *then* train (prequential eval — every example is scored before the model has seen it). |
-| `analyze.py` | Scores a predictions CSV under the leaderboard protocol: overall AUC/log-loss + AUC averaged over sliding 20,000-row windows. |
-| `experiment.py` | Generation-based experiment runner — see below. |
-| `bayes_search.py` | Non-LLM Gaussian-Process + Expected-Improvement hyperparameter search, writing into the same experiment folder structure. |
-| `dashboard.py` | Streamlit dashboard over `experiments/*/results.csv` + `best.json`. |
+| `src/preprocess_criteo.py` | Raw `train.txt` (TSV) → hashed CSV. Continuous features log-bucketed, categoricals murmur3-hashed. One preprocessed file serves every `hash_size_bits` sweep. |
+| `src/models.py` | Parameter init (`init_params`) + forward pass (`forward`) for every `algorithm`: `lr`, `nn`, `dcnv2`, `dcn2`. Pure JAX, two pytrees: `params['emb']` (hashed table, sparse updates) and `params['dense']` (everything else, dense updates). |
+| `src/optim.py` | Hand-rolled optimizers: dense Adam/SGD/SOAP for `params['dense']`, **row-sparse** Adam/SGD for `params['emb']` (only touches rows present in the batch — required to make a single pass over a `2^23`-row table tractable). |
+| `src/train.py` | Streaming trainer: for every batch, predict *then* train (prequential eval — every example is scored before the model has seen it). |
+| `src/analyze.py` | Scores a predictions CSV under the leaderboard protocol: overall AUC/log-loss + AUC averaged over sliding 20,000-row windows. |
+| `src/experiment.py` | Generation-based experiment runner — see below. |
+| `src/bayes_search.py` | Non-LLM Gaussian-Process + Expected-Improvement hyperparameter search, writing into the same experiment folder structure. |
+| `src/dashboard.py` | Streamlit dashboard over `experiments/*/results.csv` + `best.json`. |
 | `model_lr.json`, `model_dcnv2.json`, `model_dcn2.json` | Seed configs, one per algorithm. |
 | `add_combo_features.py` | Optional: appends hashed crossed-feature columns to a preprocessed CSV. |
 | `tests/test_models.py` | Shape/gradient/sparsity tests per algorithm — run with `uv run pytest`. |
 
-## The research loop (`experiment.py`)
+## The research loop (`src/experiment.py`)
 
 Every experiment lives in its own folder, `experiments/<name>/`:
 
@@ -73,44 +73,44 @@ generations/
     preds_<ts>.csv            its predictions (gitignored; for re-checking a number by hand)
 ```
 
-"Best" = highest `windowed_auc_avg`, matching `analyze.py`'s protocol. A
+"Best" = highest `windowed_auc_avg`, matching `src/analyze.py`'s protocol. A
 generation's config is written to disk *before* it's known whether it beat
 the best, so every attempt is inspectable and reproducible, not just the
 winner.
 
 ```bash
 # generation 0: trains --base as-is, seeds start.json/best.json
-uv run python experiment.py init my_experiment --base model_dcnv2.json --data data/criteo_01.csv.gz
+uv run python src/experiment.py init my_experiment --base model_dcnv2.json --data data/criteo_01.csv.gz
 
 # one more generation, config given as overrides on top of the current best.json
-uv run python experiment.py run my_experiment --data data/criteo_01.csv.gz \
+uv run python src/experiment.py run my_experiment --data data/criteo_01.csv.gz \
     --plan '[{"hypothesis": "smaller batches -> more gradient steps", "overrides": {"batch_size": 500}}]'
 
 # or N generations in one call — a plan is a JSON list of
 #   {"hypothesis": str, "overrides": {...}}   merged onto the *current* best
 #   {"hypothesis": str, "config": {...}}      full config, used as-is
 # run in order; each updates best.json before the next entry runs
-uv run python experiment.py run my_experiment --data data/criteo_01.csv.gz --plan plan.json
+uv run python src/experiment.py run my_experiment --data data/criteo_01.csv.gz --plan plan.json
 ```
 
 There is no built-in hyperparameter *proposer* for this path — something
 (you, another script, or an LLM) has to decide what goes in `overrides` each
-generation. That's what makes it comparable to `bayes_search.py`, which
+generation. That's what makes it comparable to `src/bayes_search.py`, which
 proposes automatically.
 
-## Non-LLM search (`bayes_search.py`)
+## Non-LLM search (`src/bayes_search.py`)
 
-Same experiment-folder output format as `experiment.py`, but hyperparameters
+Same experiment-folder output format as `src/experiment.py`, but hyperparameters
 are proposed by a Gaussian Process + Expected Improvement loop
 (`scikit-learn`'s `GaussianProcessRegressor`, Matérn kernel), not by a human
 or an LLM. One command runs the whole thing:
 
 ```bash
-uv run python bayes_search.py search my_experiment \
+uv run python src/bayes_search.py search my_experiment \
     --base model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
 
 # add more generations to an existing search later
-uv run python bayes_search.py resume my_experiment --data data/criteo_01.csv.gz --n-iterations 5
+uv run python src/bayes_search.py resume my_experiment --data data/criteo_01.csv.gz --n-iterations 5
 ```
 
 `--n-iterations` counts generation 0 (the unmodified baseline). Search spaces
@@ -129,7 +129,7 @@ reasoning-driven proposer.
 
 ## Model configs (`model_*.json` → `algorithm` field)
 
-All four algorithms share the same config schema (`Config` in `models.py`,
+All four algorithms share the same config schema (`Config` in `src/models.py`,
 extra fields are just ignored by algorithms that don't need them):
 
 - `lr` — logistic regression: logit = sum of 1-dim looked-up embedding weights.
