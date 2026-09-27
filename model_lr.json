@@ -1,0 +1,12 @@
+{
+    "algorithm": "lr",
+    "batch_size": 2500,
+    "hash_size_bits": 22,
+    "init_weight_std": 0.001,
+    "learning_rate": 0.001,
+    "optimizer": "adam",
+    "adam_beta1": 0.9,
+    "regularization": 0.000001,
+    "features": ["_all"],
+    "label_feature": "label"
+}

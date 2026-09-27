@@ -1,0 +1,25 @@
+[project]
+name = "recs-challenge"
+version = "0.1.0"
+description = "Minimal JAX framework for single-pass CTR model training on Criteo (DCN2 hackathon starting pack)"
+requires-python = ">=3.11"
+dependencies = [
+    "jax>=0.4.30",
+    "matplotlib>=3.8",
+    "mmh3>=4.0",
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "scikit-learn>=1.4",
+    "streamlit>=1.64.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+# the modules live at the repo root, not in a package
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.uv]
+package = false
