@@ -12,9 +12,9 @@ Preprocessing (follows the DCN2 paper):
     file serves every hash-space size in a sweep
 
 Deterministic splits (everyone must train on byte-identical files):
-    full stream : python preprocess_criteo.py train.txt criteo_full.csv
-    5% sample   : python preprocess_criteo.py train.txt criteo_05.csv --sample-mod 20
-    1% sample   : python preprocess_criteo.py train.txt criteo_01.csv.gz --sample-mod 100
+    full stream : python src/preprocess_criteo.py train.txt criteo_full.csv
+    5% sample   : python src/preprocess_criteo.py train.txt criteo_05.csv --sample-mod 20
+    1% sample   : python src/preprocess_criteo.py train.txt criteo_01.csv.gz --sample-mod 100
 Sampling keeps every k-th row (row_index % k == 0), preserving temporal order.
 Output is gzip-compressed whenever output_file ends in .gz (train.py reads
 either transparently); handy since a hashed CSV compresses to about a quarter

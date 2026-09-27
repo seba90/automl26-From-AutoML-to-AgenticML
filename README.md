@@ -7,7 +7,7 @@ non-LLM Bayesian optimizer against an LLM acting as the hyperparameter
 proposer — with and without giving the LLM room to reason about *why* a
 change might help.
 
-Before starting, follow the **Quickstart** in `CLAUDE.md` (install deps,
+Before starting, follow the **Quickstart** in `AGENTS.md` (install deps,
 optionally start the dashboard).
 
 A0 is fully mechanical — one script call, no LLM involved, deterministic
@@ -21,14 +21,14 @@ to produce itself.
 
 Every generation is evaluated by `windowed_auc_avg` — AUC averaged over
 sliding 20,000-row windows of the single prequential pass (predict, then
-train), per `analyze.py`'s protocol.
+train), per `src/analyze.py`'s protocol.
 
 ---
 
 ## Experiment A0 — Classic Bayesian Optimization (DCNv2)
 
 Baseline: unmodified `model_dcnv2.json`. Proposer: Gaussian Process +
-Expected Improvement (`bayes_search.py`), no domain knowledge, no LLM
+Expected Improvement (`src/bayes_search.py`), no domain knowledge, no LLM
 involved at all.
 
 **The prompt that started this experiment:**
@@ -37,11 +37,11 @@ involved at all.
 > the search script as-is — don't tune the model yourself. Run it for 10
 > iterations on the 1% data sample, and call the experiment `A0`.
 
-Which, since `bayes_search.py` needs no LLM in the loop, resolves to one
+Which, since `src/bayes_search.py` needs no LLM in the loop, resolves to one
 command:
 
 ```bash
-uv run python bayes_search.py search A0 \
+uv run python src/bayes_search.py search A0 \
     --base model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
 ```
 
@@ -112,8 +112,8 @@ each generation's config itself rather than following a fixed list.
 ## After the tutorial
 
 All of the above runs on the bundled 1% sample so each generation trains in
-seconds. Once you're done, `CLAUDE.md`'s **Beyond the tutorial** section
+seconds. Once you're done, `AGENTS.md`'s **Beyond the tutorial** section
 covers downloading the full Criteo dataset and building larger samples (10%,
-full) to keep experimenting on your own — `experiment.py` and
-`bayes_search.py` work exactly the same way, just point `--data` at the
+full) to keep experimenting on your own — `src/experiment.py` and
+`src/bayes_search.py` work exactly the same way, just point `--data` at the
 bigger file.

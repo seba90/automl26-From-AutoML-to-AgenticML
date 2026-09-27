@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-EXPERIMENTS_DIR = Path(__file__).parent / 'experiments'
+EXPERIMENTS_DIR = Path(__file__).parent.parent / 'experiments'
 
 st.set_page_config(page_title='Experiment Progress', layout='wide')
 st.title('Hyperparameter Search Dashboard')
@@ -17,7 +17,7 @@ experiment_names = sorted(
 
 if not experiment_names:
     st.warning(f'No experiments found under {EXPERIMENTS_DIR}. '
-              f'Run `python experiment.py init ...` first.')
+              f'Run `python src/experiment.py init ...` first.')
     st.stop()
 
 selected = st.sidebar.selectbox('Experiment', experiment_names)

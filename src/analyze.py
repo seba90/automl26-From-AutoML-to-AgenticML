@@ -3,7 +3,7 @@ windows of the prequential prediction stream, reported as avg / median / min /
 max / std, plus overall AUC and log loss.
 
 Usage:
-    python analyze.py preds.csv [--window 20000] [--stride 20000]
+    python src/analyze.py preds.csv [--window 20000] [--stride 20000]
 """
 
 import argparse
