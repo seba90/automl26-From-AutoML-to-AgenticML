@@ -71,7 +71,7 @@ This experiment has two parts: first implementing a new model architecture
 LLM-surrogate search as A1 — but this time requiring the LLM to explain why
 a change might help and what it will try next.
 
-### Step A2 — Implement DCN² support
+### Step 1 — Implement DCN² support
 
 **The prompt that started this step:**
 
@@ -80,7 +80,7 @@ a change might help and what it will try next.
 > rather than just extending the existing DCNv2 algorithm. Write me down the
 > features you have added to it.
 
-### Step A3 — Run a 10-generation LLM surrogate search, with reasoning
+### Step 2 — Run a 10-generation LLM surrogate search, with reasoning
 
 Same protocol as A1, but at each generation the LLM must state why it
 expects the change to help and what it intends to try next, and must decide
@@ -91,7 +91,7 @@ each generation's config itself rather than following a fixed list.
 > Take `model_dcn2.json`. Be the surrogate model again — 10 iterations —
 > but this time explain why you think each change will improve the AUC,
 > and explicitly say what you'll do next, before deciding how to improve
-> the model.
+> the model. Name the experiment A2+A3
 
 ---
 
