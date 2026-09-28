@@ -9,7 +9,7 @@ non-LLM Bayesian optimizer against an LLM acting as the hyperparameter
 proposer — with and without giving the LLM room to reason about *why* a
 change might help.
 
-Before starting, follow the **Quickstart** in `AGENTS.md` (install deps,
+Before starting, follow the **Quickstart** in `../AGENTS.md` (install deps,
 optionally start the dashboard).
 
 A0 is fully mechanical — one script call, no LLM involved, deterministic
@@ -29,13 +29,13 @@ train), per `src/analyze.py`'s protocol.
 
 ## Experiment A0 — Classic Bayesian Optimization (DCNv2)
 
-Baseline: unmodified `model_dcnv2.json`. Proposer: Gaussian Process +
+Baseline: unmodified `models/model_dcnv2.json`. Proposer: Gaussian Process +
 Expected Improvement (`src/bayes_search.py`), no domain knowledge, no LLM
 involved at all.
 
 **The prompt that started this experiment:**
 
-> Run a classic Bayesian optimization test for `model_dcnv2.json`. Just use
+> Run a classic Bayesian optimization test for `models/model_dcnv2.json`. Just use
 > the search script as-is — don't tune the model yourself. Run it for 10
 > iterations on the 1% data sample, and call the experiment `A0`.
 
@@ -43,8 +43,8 @@ Which, since `src/bayes_search.py` needs no LLM in the loop, resolves to one
 command:
 
 ```bash
-uv run python src/bayes_search.py search A0 \
-    --base model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
+uv run --project config python src/bayes_search.py search A0 \
+    --base models/model_dcnv2.json --data data/criteo_01.csv.gz --n-iterations 10
 ```
 
 That single command runs all 10 generations (baseline + 9 GP-EI-proposed
@@ -60,7 +60,7 @@ reasoning — just numbers in, AUC out, repeat.
 
 **The prompt that started this experiment:**
 
-> Run a new experiment. Take `model_dcnv2.json` again. Run 10 generations.
+> Run a new experiment. Take `models/model_dcnv2.json` again. Run 10 generations.
 > This time, instead of using the Bayesian process, you are the surrogate
 > model — you decide which hyperparameters to try. Don't explain your
 > choices, just suggest new hyperparameters after each iteration. Call this
@@ -79,7 +79,7 @@ a change might help and what it will try next.
 
 **The prompt that started this step:**
 
-> There's a paper `dcn_paper.pdf` for implementing DCN² in this repo. Please
+> There's a paper `papers/dcn_paper.pdf` for implementing DCN² in this repo. Please
 > implement support for it — pick a new algorithm name if one is needed,
 > rather than just extending the existing DCNv2 algorithm. Write me down the
 > features you have added to it.
@@ -92,7 +92,7 @@ each generation's config itself rather than following a fixed list.
 
 **The prompt that started this experiment:**
 
-> Take `model_dcn2.json`. Be the surrogate model again — 10 iterations —
+> Take `models/model_dcn2.json`. Be the surrogate model again — 10 iterations —
 > but this time explain why you think each change will improve the AUC,
 > and explicitly say what you'll do next, before deciding how to improve
 > the model. Name the experiment A2+A3
@@ -114,7 +114,7 @@ each generation's config itself rather than following a fixed list.
 ## After the tutorial
 
 All of the above runs on the bundled 1% sample so each generation trains in
-seconds. Once you're done, `AGENTS.md`'s **Beyond the tutorial** section
+seconds. Once you're done, `../AGENTS.md`'s **Beyond the tutorial** section
 covers downloading the full Criteo dataset and building larger samples (10%,
 full) to keep experimenting on your own — `src/experiment.py` and
 `src/bayes_search.py` work exactly the same way, just point `--data` at the

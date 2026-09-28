@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Download the Criteo Display Advertising Challenge dataset into data/.
 #
-#   ./download_data.sh sample   # 100k-row official sample (~9 MB)  -> data/dac_sample.txt
-#   ./download_data.sh full     # full dataset (~4.6 GB compressed) -> data/train.txt
+#   scripts/download_data.sh sample   # 100k-row official sample (~9 MB)  -> data/dac_sample.txt
+#   scripts/download_data.sh full     # full dataset (~4.6 GB compressed) -> data/train.txt
 #
 # Source: the original Kaggle/Criteo release (dac.tar.gz), mirrored ungated on
 # Hugging Face by the Microsoft Recommenders team. Row order is the original
 # temporal order — do not shuffle; the whole protocol depends on it.
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 MODE="${1:-sample}"
 BASE_URL="https://huggingface.co/datasets/Recommenders/criteo/resolve/main"
