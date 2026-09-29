@@ -44,18 +44,18 @@ below (`src/experiment.py`, `src/bayes_search.py`, the dashboard) works unchange
 
 ## Repository layout
 
-The root contains this guide and project folders only:
+The root contains this guide, the tutorial README, and project folders only:
 
 ```text
 .github/   CI workflows
 config/    pyproject.toml, uv.lock, and project-local ignore rules
 data/      bundled and generated Criteo datasets
-docs/      experiment tutorial
 experiments/ generated experiment outputs (gitignored)
 models/    model seed configs
 papers/    reference papers
 scripts/   utility scripts
 src/       training, model, and search code
+tasks/     one file per tutorial exercise
 tests/     pytest suite
 ```
 
@@ -73,7 +73,8 @@ tests/     pytest suite
 | `src/dashboard.py` | Streamlit dashboard over `experiments/*/results.csv` + `best.json`. |
 | `models/` | Model seed configs; generated `model_dcn2.json` is gitignored. |
 | `config/pyproject.toml`, `config/uv.lock` | Python project metadata, dependencies, and lockfile. |
-| `docs/README.md` | Experiment tutorial. |
+| `README.md` | Tutorial setup guide (prerequisites, install, run the dashboard). |
+| `tasks/main.md`, `tasks/A0.md`, `tasks/A1.md`, `tasks/A2_A3.md` | The tutorial exercises, one file per experiment. |
 | `papers/dcn_paper.pdf` | DCN² reference paper. |
 | `scripts/download_data.sh` | Dataset downloader. |
 | `tests/test_models.py` | Shape/gradient/sparsity tests per algorithm — run with `uv run --project config pytest -c config/pyproject.toml -q`. |
