@@ -51,7 +51,7 @@ def gather(params, cfg, key):
     return np.asarray(idx), params['emb'][idx]
 
 
-@pytest.mark.parametrize('algorithm', ['lr', 'nn', 'dcnv2'])
+@pytest.mark.parametrize('algorithm', ['lr', 'nn', 'dcnv2', 'dcn2'])
 def test_forward_returns_one_logit_per_example(algorithm):
     cfg = make_cfg(algorithm)
     params = init_params(cfg, jax.random.PRNGKey(0))
@@ -63,7 +63,7 @@ def test_forward_returns_one_logit_per_example(algorithm):
     assert jnp.all(jnp.isfinite(logits))
 
 
-@pytest.mark.parametrize('algorithm', ['lr', 'nn', 'dcnv2'])
+@pytest.mark.parametrize('algorithm', ['lr', 'nn', 'dcnv2', 'dcn2'])
 def test_table_has_sentinel_row_and_correct_dim(algorithm):
     cfg = make_cfg(algorithm)
     params = init_params(cfg, jax.random.PRNGKey(0))
@@ -81,6 +81,18 @@ def test_dcnv2_forward_shape():
     for layer in params['dense']['cross']:
         assert layer['U'].shape == (flat_dim, cfg.cross_projection_dim)
         assert layer['V'].shape == (cfg.cross_projection_dim, flat_dim)
+
+
+def test_dcn2_forward_shape_and_collision_weights():
+    cfg = make_cfg('dcn2')
+    params = init_params(cfg, jax.random.PRNGKey(0))
+    flat_dim = cfg.n_features * cfg.dimensions
+
+    assert params['emb'].shape == (2 ** cfg.hash_size_bits + 1, cfg.dimensions + 1)
+    np.testing.assert_allclose(params['emb'][:, -1], 1.0)
+    for layer in params['dense']['onlydense']:
+        assert layer['W'].shape == (flat_dim, flat_dim)
+        assert layer['b'].shape == (flat_dim,)
 
 
 def test_unknown_algorithm_is_rejected():
