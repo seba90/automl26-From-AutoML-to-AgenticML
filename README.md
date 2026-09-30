@@ -11,7 +11,7 @@ Criteo sample.
 
 ## Prerequisites
 
-- [Claude Code](https://claude.com/claude-code) — Claude Sonnet 5 is enough.
+- [Claude Code](https://claude.com/claude-code) — Examples were tested with Claude Sonnet 5.
 
 ## Setup
 
