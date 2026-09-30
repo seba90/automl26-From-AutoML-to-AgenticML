@@ -74,7 +74,7 @@ tests/     pytest suite
 | `models/` | Model seed configs; generated `model_dcn2.json` is gitignored. |
 | `config/pyproject.toml`, `config/uv.lock` | Python project metadata, dependencies, and lockfile. |
 | `README.md` | Tutorial setup guide (prerequisites, install, run the dashboard). |
-| `tasks/main.md`, `tasks/A0.md`, `tasks/A1.md`, `tasks/A2_A3.md` | The tutorial exercises, one file per experiment. |
+| `tasks/main.md`, `tasks/A0.md`, `tasks/A1.md`, `tasks/A2_A3.md`, `tasks/A4.md` | The tutorial exercises, one file per experiment. |
 | `papers/dcn_paper.pdf` | DCN² reference paper. |
 | `scripts/download_data.sh` | Dataset downloader. |
 | `tests/test_models.py` | Shape/gradient/sparsity tests per algorithm — run with `uv run --project config pytest -c config/pyproject.toml -q`. |
