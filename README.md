@@ -1,4 +1,4 @@
-# Tutorial: Bayesian vs. LLM-Driven Hyperparameter Search
+# AutoML 2026 tutorial: Bayesian vs. LLM-Driven Hyperparameter Search
 
 Hands-on companion for the AutoML 2026 tutorial [*From AutoML to AgenticML:
 LLMs as the New SearchOperator*](https://2026.automl.cc/from-automl-to-agenticml-llms-as-the-new-searchoperator/),
