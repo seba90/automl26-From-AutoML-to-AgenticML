@@ -1,5 +1,7 @@
 # AutoML 2026 tutorial: From AutoML to AgenticML: LLMs as the New SearchOperator
 
+![Classic AutoML vs. LLM-driven AutoML workflow](img/workflow.png)
+
 Hands-on companion for the AutoML 2026 tutorial [*From AutoML to AgenticML:
 LLMs as the New SearchOperator*](https://2026.automl.cc/from-automl-to-agenticml-llms-as-the-new-searchoperator/),
 which explores LLMs as search operators in AutoML — proposing candidates,
