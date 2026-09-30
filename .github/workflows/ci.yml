@@ -17,4 +17,6 @@ jobs:
           python-version: "3.11"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --project config --locked
+      - run: python -m compileall -q src
+      - run: bash -n scripts/download_data.sh
       - run: uv run --project config --no-sync pytest -c config/pyproject.toml -q
