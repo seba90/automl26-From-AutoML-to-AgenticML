@@ -27,3 +27,7 @@ The 1% Criteo sample (`data/criteo_01.csv.gz`) already ships in this repo.
 
 ## Tasks
 Once you setup your environment you can start with the task which live in [`tasks/`](tasks/main.md).
+
+## Source
+
+Dataset: [Criteo Display Advertising Challenge](https://huggingface.co/datasets/Recommenders/criteo)
