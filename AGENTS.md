@@ -65,7 +65,7 @@ tests/     pytest suite
 |---|---|
 | `src/preprocess_criteo.py` | Raw `train.txt` (TSV) → hashed CSV. Continuous features log-bucketed, categoricals murmur3-hashed. One preprocessed file serves every `hash_size_bits` sweep. |
 | `src/models.py` | Parameter init (`init_params`) + forward pass (`forward`) for every `algorithm`: `lr`, `nn`, `dcnv2`, `dcn2`. Pure JAX, two pytrees: `params['emb']` (hashed table, sparse updates) and `params['dense']` (everything else, dense updates). |
-| `src/optim.py` | Hand-rolled optimizers: dense Adam/SGD/SOAP for `params['dense']`, **row-sparse** Adam/SGD for `params['emb']` (only touches rows present in the batch — required to make a single pass over a `2^23`-row table tractable). |
+| `src/optim.py` | Hand-rolled optimizers: dense Adam/SGD for `params['dense']`, **row-sparse** Adam/SGD for `params['emb']` (only touches rows present in the batch — required to make a single pass over a `2^23`-row table tractable). |
 | `src/train.py` | Streaming trainer: for every batch, predict *then* train (prequential eval — every example is scored before the model has seen it). |
 | `src/analyze.py` | Scores a predictions CSV under the leaderboard protocol: overall AUC/log-loss + AUC averaged over sliding 20,000-row windows. |
 | `src/experiment.py` | Generation-based experiment runner — see below. |
@@ -90,8 +90,8 @@ best_metrics.json       metrics for best.json
 results.csv             one row per generation, in run order
 research_log.md         hypothesis / config diff / result per generation
 generations/
-    end_training_<ts>.json   the config actually trained in that generation
-    preds_<ts>.csv            its predictions (gitignored; for re-checking a number by hand)
+    <ts>_gen_<n>.json         the config actually trained in that generation
+    preds_<ts>_gen_<n>.csv    its predictions (gitignored; for re-checking a number by hand)
 ```
 
 "Best" = highest `windowed_auc_avg`, matching `src/analyze.py`'s protocol. A
@@ -178,5 +178,5 @@ uv run --project config pytest -c config/pyproject.toml -q
 
 Covers: forward-pass shapes per algorithm, the collision-weight init
 invariant, gradient flow, and — the load-bearing one — that a sparse
-optimizer step only moves rows that appeared in the batch (works for `adam`,
-`sgd`, and `soap`).
+optimizer step only moves rows that appeared in the batch (works for `adam`
+and `sgd`).

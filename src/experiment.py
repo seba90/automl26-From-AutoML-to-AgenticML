@@ -147,11 +147,14 @@ overall AUC = {metrics.get('overall_auc')}, log loss = {metrics.get('overall_log
 def next_generation_num(results_path: Path) -> int:
     """Generation 0 is the seed trained by `init`; each `run` call after that
     increments by one. Counted from results.csv row count so it survives
-    across separate invocations of this script."""
+    across separate invocations of this script.
+
+    Uses csv.reader (not a line count) because a multi-line hypothesis is
+    correctly quoted by the CSV writer and would otherwise inflate the count."""
     if not results_path.exists():
         return 0
-    with open(results_path) as f:
-        return sum(1 for _ in f) - 1  # minus header
+    with open(results_path, newline='') as f:
+        return sum(1 for _ in csv.reader(f)) - 1  # minus header
 
 
 def run_generation(name: str, config: dict, data: Path, hypothesis: str,
@@ -225,7 +228,10 @@ def cmd_run(args):
     stride = args.stride or args.window
 
     if args.plan:
-        plan = json.loads(Path(args.plan).read_text())
+        try:
+            plan = json.loads(args.plan)
+        except json.JSONDecodeError:
+            plan = json.loads(Path(args.plan).read_text())
         for i, entry in enumerate(plan):
             best_path = edir / 'best.json'
             current_best = json.loads(best_path.read_text()) if best_path.exists() else {}

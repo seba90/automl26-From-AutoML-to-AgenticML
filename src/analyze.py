@@ -1,4 +1,4 @@
-"""Evaluation under the hackathon protocol: AUC over sliding 20,000-instance
+"""Evaluation under the leaderboard protocol: AUC over sliding 20,000-instance
 windows of the prequential prediction stream, reported as avg / median / min /
 max / std, plus overall AUC and log loss.
 

@@ -133,7 +133,9 @@ def expected_improvement(x: np.ndarray, gp: GaussianProcessRegressor, y_best: fl
 def propose_next(space: dict, X: np.ndarray, y: np.ndarray, rng: np.random.Generator,
                  n_restarts: int = 10) -> np.ndarray:
     kernel = ConstantKernel(1.0) * Matern(nu=2.5) + WhiteKernel(noise_level=1e-4)
-    gp = GaussianProcessRegressor(kernel=kernel, normalize_y=True, n_restarts_optimizer=3)
+    gp_seed = int(rng.integers(0, 2 ** 32 - 1))
+    gp = GaussianProcessRegressor(kernel=kernel, normalize_y=True, n_restarts_optimizer=3,
+                                  random_state=gp_seed)
     gp.fit(X, y)
     y_best = float(y.max())
 

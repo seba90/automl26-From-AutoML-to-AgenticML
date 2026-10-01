@@ -1,7 +1,7 @@
 [project]
-name = "recs-challenge"
+name = "automl-tutorial"
 version = "0.1.0"
-description = "Minimal JAX framework for single-pass CTR model training on Criteo (DCN2 hackathon starting pack)"
+description = "Minimal JAX framework for single-pass CTR model training on Criteo"
 requires-python = ">=3.11"
 dependencies = [
     "jax>=0.4.30",

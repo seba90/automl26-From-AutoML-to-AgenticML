@@ -8,7 +8,7 @@ feature) proposer — with and without giving the LLM room to reason about
 1. [A0](A0.md) — Classic Bayesian Optimization (DCNv2)
 2. [A1](A1.md) — LLM Surrogate, No Explanations (DCNv2)
 3. [A2+A3](A2_A3.md) — Implement DCN² and run an LLM surrogate *with* reasoning
-4. [A4](A4.md) — Feature Transformation, Especially String Features (DCN²)
+4. [A4](A4.md) — Feature Transformation
 
 Every generation is evaluated by `windowed_auc_avg` — AUC averaged over
 sliding 20,000-row windows of the single prequential pass (predict, then
