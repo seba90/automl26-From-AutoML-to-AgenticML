@@ -44,11 +44,11 @@ def _truncated_normal(key, shape, std=0.05):
 
 def emb_dim(cfg) -> int:
     """Embedding dimension of the single table used by the model."""
-    return 1 if cfg.algorithm == 'lr' else cfg.dimensions
+    return 1 if cfg.algorithm == 'lr' else cfg.dimensions + (1 if cfg.algorithm == 'dcn2' else 0)
 
 
 def init_params(cfg, key):
-    """Build the parameter pytree for cfg.algorithm ('lr', 'nn', 'dcnv2')."""
+    """Build the parameter pytree for cfg.algorithm ('lr', 'nn', 'dcnv2', 'dcn2')."""
     n_rows = 2 ** cfg.hash_size_bits + 1  # +1: sentinel padding row (optim.py)
     d = emb_dim(cfg)
     keys = jax.random.split(key, 64)
@@ -56,6 +56,8 @@ def init_params(cfg, key):
 
     emb = cfg.init_weight_std * jax.random.normal(
         keys[next(ki)], (n_rows, d), dtype=jnp.float32)
+    if cfg.algorithm == 'dcn2':
+        emb = emb.at[:, -1].set(1.0)
 
     dense = {'global_bias': jnp.zeros((1,), dtype=jnp.float32)}
     # Width the dense layers see. If you widen the table with extra per-row
@@ -63,7 +65,7 @@ def init_params(cfg, key):
     # collision-weight column), set this from the surviving width instead --
     # otherwise the mismatch surfaces as a dot_general shape error inside
     # _cross_forward, far from its cause.
-    flat_dim = cfg.n_features * d
+    flat_dim = cfg.n_features * (d - 1 if cfg.algorithm == 'dcn2' else d)
 
     if cfg.algorithm == 'lr':
         pass  # linear model: logit is just the sum of 1-dim embedding weights
@@ -82,6 +84,18 @@ def init_params(cfg, key):
                 'bv': jnp.zeros((flat_dim,), dtype=jnp.float32),
             })
         dense['cross'] = cross
+        dense['mlp'] = _init_mlp(cfg, keys, ki, flat_dim)
+
+    elif cfg.algorithm == 'dcn2':
+        dense['onlydense'] = []
+        for _ in range(cfg.cross_n_hidden):
+            dense['onlydense'].append({
+                'W': _glorot(keys[next(ki)], (flat_dim, flat_dim)),
+                'b': jnp.zeros((flat_dim,), dtype=jnp.float32),
+                'phi': jnp.ones((1,), dtype=jnp.float32),
+            })
+        n_pairs = cfg.n_features * (cfg.n_features - 1) // 2
+        dense['simlayer'] = {'weight': jnp.zeros((n_pairs,), dtype=jnp.float32)}
         dense['mlp'] = _init_mlp(cfg, keys, ki, flat_dim)
 
     else:
@@ -128,11 +142,29 @@ def _cross_forward(cross_layers, x, diag_scale=0.9):
     return x
 
 
+def _onlydense_forward(layers, x):
+    for layer in layers:
+        x = jax.nn.relu(x @ layer['W'] + layer['b']) * x * layer['phi']
+    return x
+
+
 def forward(dense, emb_rows, cfg, dropout_key=None, train=False):
     """Compute logits from gathered embedding rows (batch, n_features, dim)."""
     if cfg.algorithm == 'lr':
         logit = emb_rows.sum(axis=(1, 2))
     else:
+        if cfg.algorithm == 'dcn2':
+            values = emb_rows[..., :-1] * emb_rows[..., -1:]
+            x = values.reshape(values.shape[0], -1)
+            pairwise = []
+            for i in range(values.shape[1]):
+                for j in range(i + 1, values.shape[1]):
+                    pairwise.append(jnp.sum(values[:, i] * values[:, j], axis=1))
+            sim = jnp.stack(pairwise, axis=1) @ dense['simlayer']['weight']
+            x = _onlydense_forward(dense['onlydense'], x)
+            logit = _mlp_forward(dense['mlp'], x, cfg, dropout_key, train) + sim
+            return logit + dense['global_bias'][0]
+
         x = emb_rows.reshape(emb_rows.shape[0], -1)  # (batch, F*d)
         if cfg.algorithm == 'dcnv2':
             x = _cross_forward(dense['cross'], x)

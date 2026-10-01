@@ -1,0 +1,17 @@
+{
+    "algorithm": "dcn2",
+    "batch_size": 2500,
+    "cross_n_hidden": 2,
+    "dimensions": 8,
+    "dropout": 0.01,
+    "hash_size_bits": 22,
+    "hidden_layer_size": 150,
+    "init_weight_std": 0.001,
+    "learning_rate": 0.001,
+    "optimizer": "adam",
+    "adam_beta1": 0.9,
+    "n_hidden_layers": 2,
+    "regularization": 0.000001,
+    "features": ["_all"],
+    "label_feature": "label"
+}
