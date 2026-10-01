@@ -31,3 +31,18 @@ Once you setup your environment you can start with the task which live in [`task
 ## Source
 
 Dataset: [Criteo Display Advertising Challenge](https://huggingface.co/datasets/Recommenders/criteo)
+
+## Citation
+
+If you use this work, please cite it as:
+
+```bibtex
+@misc{automl26_agenticml_tutorial,
+  title        = {From {AutoML} to {AgenticML}: {LLMs} as the New Search Operator},
+  author       = {Skrlj, Blaz and Koralewski, Sebastian},
+  year         = {2026},
+  howpublished = {{AutoML} 2026 Tutorial. GitHub repository},
+  url          = {https://github.com/seba90/automl26-From-AutoML-to-AgenticML},
+  note         = {Accessed: 2026-10-01}
+}
+```
